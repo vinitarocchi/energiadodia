@@ -3,655 +3,670 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Energia do Dia — Viniastros</title>
+<title>Tarot Reels</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Montserrat:wght@300;400;500;600;700&family=Special+Elite&family=Playfair+Display:ital@1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Montserrat:wght@300;400&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --u: 1.1vmin;
-    --bg1:#f6efe0; --bg2:#f0e5cd; --bg3:#e9dcbf;
-    --gold:#a9895a; --gold-light:#c9a876; --gold-dark:#7c6340;
-    --text:#4a3c28; --text-muted:#8a7860;
-    --paper:#f6efe0; --paper-line:#d8c9ac; --paper-ink:#4a3c28; --paper-gold:#a9895a;
-  }
-  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-  body{
-    margin:0; padding:0; min-height:100vh; overflow-x:hidden;
-    background:linear-gradient(135deg,var(--bg1) 0%,var(--bg2) 50%,var(--bg3) 100%);
-    background-attachment:fixed;
-    color:var(--text); font-family:'Montserrat',sans-serif; letter-spacing:.3px;
-    display:flex; flex-direction:column; align-items:center;
-  }
-  ::-webkit-scrollbar{width:6px;} ::-webkit-scrollbar-thumb{background:rgba(169,137,90,.35); border-radius:4px;}
-
-  header{ width:100%; padding:10px 16px 4px; text-align:center; }
-  header h1{ font-family:'Cinzel',serif; font-size:18px; letter-spacing:4px; text-transform:uppercase; color:var(--gold); margin:0; font-weight:700; }
-  header p{ font-size:10px; color:var(--text-muted); margin:6px 0 0; letter-spacing:1px; }
-
-  #gameScreen{ width:100%; max-width:480px; display:flex; flex-direction:column; align-items:center; padding:0 14px 40px; }
-
-  .section-label{ font-family:'Cinzel',serif; font-size:12px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); text-align:center; margin:22px 0 12px; opacity:.9; }
-  #gameScreen > .slot-col:first-child .section-label{ margin-top:6px; }
-  .row-pair{ display:flex; gap:calc(4*var(--u)); justify-content:center; }
-
-  .card-slot{
-    width:calc(15*var(--u)); height:calc(26*var(--u)); max-width:130px; max-height:225px;
-    border:1px solid rgba(169,137,90,.5); border-radius:8px; background:rgba(169,137,90,.08);
-    display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden;
-    background-size:cover; background-position:center; cursor:default;
-    transition:transform .3s ease, border-color .3s ease;
-  }
-  .card-slot.empty{ color:var(--text-muted); font-family:'Cinzel',serif; font-size:11px; text-align:center; padding:6px; }
-  .card-slot.clickable{ cursor:pointer; border-style:dashed; }
-  .card-slot.clickable:active{ transform:scale(.96); border-color:var(--gold-dark); }
-  .card-slot.filled{ cursor:pointer; }
-  .card-slot .tag{
-    position:absolute; bottom:0; left:0; width:100%; background:rgba(74,60,40,.88);
-    border-top:1px solid var(--gold); color:#fdf8ee; font-family:'Montserrat',sans-serif;
-    font-weight:600; font-size:9px; letter-spacing:.5px; text-transform:uppercase; text-align:center;
-    padding:5px 3px; line-height:1.2; word-wrap:break-word;
-  }
-  body.hide-tags .card-slot .tag{ display:none; }
-
-  .slot-caption{ font-family:'Montserrat',sans-serif; font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-muted); text-align:center; margin-top:6px; }
-  .slot-col{ display:flex; flex-direction:column; align-items:center; }
-
-  #writeBtnWrap{ display:none; width:100%; justify-content:center; margin-top:26px; }
-  .btn{
-    background:rgba(169,137,90,.08); color:var(--text); border:1px solid var(--gold);
-    height:44px; padding:0 18px; border-radius:8px; font-family:'Montserrat',sans-serif;
-    font-size:11px; letter-spacing:1.5px; text-transform:uppercase; font-weight:500; cursor:pointer;
-    display:inline-flex; align-items:center; justify-content:center; transition:all .25s ease;
-  }
-  .btn:active{ background:var(--gold); color:var(--paper); transform:scale(.97); }
-  .btn.primary{ background:var(--gold); color:var(--paper); font-weight:600; }
-  .btn.primary:active{ background:var(--gold-dark); color:var(--paper); }
-
-  #controls{ display:none; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:18px; width:100%; }
-  #controls .btn{ flex:1 1 30%; min-width:110px; font-size:9.5px; height:40px; }
-
-  /* ---- painel inferior de sorteio ---- */
-  #drawPanel{
-    display:none; position:fixed; left:0; right:0; bottom:0; width:100%;
-    background:var(--paper); border-top:1px solid var(--gold);
-    padding:14px 10px 18px; z-index:500;
-    max-height:52vh; flex-direction:column; align-items:center;
-    box-shadow:0 -6px 24px rgba(122,99,64,.18);
-  }
-  #drawStatus{ font-family:'Cinzel',serif; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--gold-dark); margin-bottom:10px; text-align:center; }
-  #drawGrid{ width:100%; flex:1; overflow-y:auto; display:flex; flex-wrap:wrap; gap:6px; justify-content:center; padding:4px; }
-  #drawGrid.rows-layout{ flex-direction:column; align-items:center; gap:5px; }
-  .draw-row{ display:flex; gap:3px; justify-content:center; width:100%; }
-  .back-card{
-    width:34px; height:59px; border-radius:5px; border:1px solid var(--gold);
-    background:
-      repeating-linear-gradient(45deg, rgba(169,137,90,.22) 0 2px, transparent 2px 8px),
-      linear-gradient(160deg, var(--bg3), var(--bg1));
-    cursor:pointer; flex-shrink:0; transition:transform .25s ease;
-  }
-  .back-card.minor{ width:min(7.2vw, 24px); height:min(12.6vw, 42px); }
-  .back-card:active{ transform:translateY(-4px) scale(1.08); }
-  .back-card.revealed{ opacity:0; pointer-events:none; }
-  .shuffle-wrap{ display:flex; align-items:center; justify-content:center; width:100%; min-height:80px; }
-  .shuffle-card{ width:34px; height:59px; border-radius:5px; border:1px solid var(--gold); background:linear-gradient(160deg, var(--bg3), var(--bg1)); position:absolute; animation:shuf 1.3s cubic-bezier(.25,1,.5,1) infinite; }
-  @keyframes shuf{ 0%{transform:translateX(0) translateY(0) rotate(0);} 20%{transform:translateX(-22px) translateY(-10px) rotate(-14deg);} 40%{transform:translateX(0) translateY(-14px) rotate(0);} 60%{transform:translateX(22px) translateY(-10px) rotate(14deg);} 100%{transform:translateX(0) translateY(0) rotate(0);} }
-
-  /* ---- modal detalhe ---- */
-  .modal{ display:none; position:fixed; inset:0; background:rgba(74,60,40,.35); z-index:1100; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
-  .modal-content{ background:var(--paper); border:1px solid var(--gold); border-radius:14px; width:88%; max-width:340px; max-height:86vh; overflow-y:auto; padding:20px; box-shadow:0 10px 40px rgba(122,99,64,.25); }
-  .modal-content h2{ font-family:'Cinzel',serif; font-size:16px; color:var(--gold-dark); margin:0 0 12px; text-transform:uppercase; letter-spacing:1.5px; text-align:center; }
-  .modal-content img{ width:130px; display:block; margin:0 auto 14px; border-radius:6px; border:1px solid var(--gold); }
-  .modal-content .verbs{ text-align:center; color:var(--gold-dark); font-weight:600; font-size:13px; margin-bottom:12px; }
-  .modal-content .situ{ font-size:12px; line-height:1.6; color:var(--text); }
-  .close-x{ float:right; background:none; border:none; color:var(--text-muted); font-size:22px; cursor:pointer; margin-top:-8px; }
-
-  /* ============================= PLANNER ============================= */
-  #plannerOverlay{
-    display:none; position:fixed; inset:0; background:var(--paper); z-index:1000;
-    flex-direction:column; align-items:center; justify-content:flex-start; overflow:hidden; padding:0;
+  /* Reset e Configurações Básicas */
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #111;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: 'Cormorant Garamond', serif;
+    overscroll-behavior-y: contain; 
   }
 
-  #plannerPage{
-    width:100vw;
-    height:100vh;
-    height:100dvh;
-    background:var(--paper);
-    background-image:
-      radial-gradient(circle at 10% 8%, rgba(169,137,90,.06), transparent 30%),
-      radial-gradient(circle at 90% 92%, rgba(169,137,90,.06), transparent 30%);
-    border-radius:0;
-    position:relative; overflow-y:auto;
-    padding:6% 8%;
-    display:flex; flex-direction:column; align-items:center;
-    font-family:'Special Elite', monospace;
-    color:var(--paper-ink);
+  /* Container Principal */
+  .app-container {
+    width: 100vw;
+    height: 100vh;
+    max-width: 56.25vh; 
+    background-color: #83A9C7; /* Azul Padrão */
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: background-color 0.5s ease;
   }
 
-  .orn{ color:var(--paper-gold); opacity:.85; }
-  .orn-row{ display:flex; align-items:center; justify-content:center; gap:6px; width:100%; }
-  .orn-line{ flex:1; height:1px; background:var(--paper-gold); opacity:.5; max-width:60px; position:relative; top:4px; }
-  .sunburst{ font-size:20px; text-align:center; color:var(--paper-gold); margin-bottom:2%; line-height:1; flex-shrink:0; }
-
-  .date-box{
-    border:1px solid var(--paper-gold); border-radius:30px; padding:6px 22px; margin:2% 0 3%;
-    display:flex; align-items:center; gap:4px; font-size:13px; letter-spacing:1px; color:var(--paper-ink);
-    flex-shrink:0;
-  }
-  .date-box span[contenteditable]{ outline:none; min-width:14px; display:inline-block; text-align:center; }
-  .date-box span.sep{ opacity:.6; }
-
-  .days-row{ display:flex; gap:6px; margin-bottom:4%; flex-shrink:0; }
-  .day-circle{
-    width:22px; height:22px; border-radius:50%; border:1px solid var(--paper-gold);
-    display:flex; align-items:center; justify-content:center; font-size:10px; color:var(--paper-ink);
-    cursor:pointer; user-select:none; background:transparent; transition:all .2s ease;
-  }
-  .day-circle.selected{ background:var(--paper-gold); color:var(--paper); border-color:var(--paper-gold); }
-
-  .plabel{ font-family:'Montserrat',sans-serif; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--paper-ink); text-align:center; margin:1% 0 3%; opacity:.85; flex-shrink:0; }
-  .plabel.conselho{ font-family:'Playfair Display', serif; font-style:italic; font-size:19px; letter-spacing:0; text-transform:none; margin:4% 0 2.5%; flex-shrink:0; }
-  .orn-row{ flex-shrink:0; }
-
-  .sticker-row{ display:flex; gap:calc(4*var(--u)); justify-content:center; margin-bottom:2.5%; width:100%; flex-shrink:0; }
-  .sticker{
-    width:calc(15*var(--u)); height:calc(26*var(--u)); max-width:130px; max-height:225px; border-radius:8px;
-    border:1px solid var(--paper-gold);
-    background:transparent; position:relative; overflow:hidden; cursor:pointer; flex-shrink:0;
-  }
-  .sticker .art{ position:absolute; inset:0; background-size:cover; background-position:center; }
-
-  .write-lines{
-    width:100%; height:76px; outline:none; font-family:'Special Elite', monospace; font-size:11px;
-    color:var(--paper-ink); line-height:19px; background-image:repeating-linear-gradient(to bottom, transparent 0, transparent 18px, var(--paper-line) 18px, var(--paper-line) 19px);
-    padding-top:1px; overflow:hidden; margin-bottom:2%; flex-shrink:0;
+  /* Sistema de Texturas Globais (Mantido apenas Liso e Grain 1) */
+  .texture-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 50; 
+    opacity: 0;
+    transition: opacity 0.5s ease, background-image 0.5s ease;
   }
 
-  .corner{ position:absolute; font-size:15px; color:var(--paper-gold); opacity:.7; }
-  .corner.tl{ top:10px; left:12px; cursor:pointer; } .corner.tr{ top:10px; right:12px; }
-  .corner.bl{ bottom:10px; left:12px; } .corner.br{ bottom:10px; right:12px; }
-  .sparkle{ position:absolute; font-size:9px; color:var(--paper-gold); opacity:.6; }
+  .app-container.texture-grain-1 .texture-overlay {
+    opacity: 0.15; 
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  }
+  .app-container.light-mode.texture-grain-1 .texture-overlay {
+    opacity: 0.25; 
+    mix-blend-mode: multiply;
+  }
+
+  @media (max-width: 600px) {
+    .app-container { max-width: 100vw; }
+  }
+
+  /* Tela Inicial */
+  #start-screen {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    z-index: 20;
+    padding: 20px;
+    text-align: center;
+  }
+
+  /* Estilos de Textos e Botões (Padrão Escuro) */
+  .ui-text {
+    color: #fff;
+    transition: color 0.4s ease, border-color 0.4s ease, background-color 0.4s ease;
+  }
+  .ui-border {
+    border: 1px solid #fff;
+    transition: color 0.4s ease, border-color 0.4s ease, background-color 0.4s ease;
+  }
+
+  #start-btn {
+    background: transparent;
+    padding: 15px 40px;
+    font-size: 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 300;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin-bottom: 30px;
+  }
+  #start-btn:hover { background: rgba(255, 255, 255, 0.1); }
+
+  /* MODO CLARO - Quando o fundo for branco */
+  .app-container.light-mode .ui-text { color: #111 !important; }
+  .app-container.light-mode .ui-border { border-color: #111 !important; }
+  .app-container.light-mode #start-btn:hover { background: rgba(0, 0, 0, 0.05); }
+  .app-container.light-mode .opt-btn:hover { background: rgba(0, 0, 0, 0.05); }
+  .app-container.light-mode .opt-btn.active { background: #111; color: #fff !important; }
+  .app-container.light-mode .swatch { border-color: rgba(0,0,0,0.1); }
+  .app-container.light-mode .swatch.active { border-color: #111 !important; }
+  .app-container.light-mode .author-tag { color: rgba(0, 0, 0, 0.65) !important; }
+
+  /* Seção de Configurações */
+  .settings-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+    max-height: 70vh;
+    overflow-y: auto;
+    padding-bottom: 20px;
+  }
+
+  .settings-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .settings-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    opacity: 0.8;
+  }
+
+  /* Cores */
+  .color-swatches {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 250px;
+    align-items: center;
+  }
+  .swatch {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+    box-sizing: border-box;
+  }
+  .swatch:hover { transform: scale(1.15); }
+  .swatch.active { border-color: #fff; transform: scale(1.15); }
+
+  input[type="color"].wheel-picker {
+    padding: 0;
+    border: 1px solid rgba(255,255,255,0.4);
+    outline: none;
+    -webkit-appearance: none;
+    width: 26px; 
+    height: 26px;
+    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 25%, #a1c4fd 50%, #c2e9fb 75%, #d4fc79 100%);
+    border-radius: 50%;
+    box-shadow: inset 0 0 3px rgba(0,0,0,0.2);
+  }
+  input[type="color"].wheel-picker::-webkit-color-swatch-wrapper { padding: 0; }
+  input[type="color"].wheel-picker::-webkit-color-swatch { border: none; border-radius: 50%; opacity: 0; }
+  input[type="color"].wheel-picker::-moz-color-swatch { border: none; border-radius: 50%; opacity: 0; }
+
+  /* Filtros e Texturas - Botões */
+  .filter-buttons {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .opt-btn {
+    background: transparent;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 5px 8px;
+    border-radius: 20px;
+    cursor: pointer;
+  }
+  .opt-btn.active {
+    background: #fff;
+    color: #111 !important;
+  }
+
+  /* Botão Grain na Tela Inicial (Configurações) */
+  .preview-card-trigger {
+    background: transparent;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+  }
+  .preview-card-trigger:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+  .app-container.light-mode .preview-card-trigger:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  /* Tela do Reel */
+  #reels-screen {
+    flex: 1;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding-top: 40px;
+    z-index: 10;
+  }
+
+  .title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.5rem; 
+    font-weight: 400;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    position: absolute;
+    top: 110px;
+    width: 100%;
+    z-index: 10;
+    opacity: 0.9;
+  }
+
+  /* Container da Carta (Reduzido em 30% - era 75%, agora é 52.5%) */
+  .card-wrapper {
+    position: relative;
+    width: 52.5%; 
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: 40px;
+  }
+
+  .author-tag {
+    position: absolute;
+    top: -25px; 
+    width: 100%;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.65);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: color 0.4s ease;
+  }
+
+  .card-inner {
+    position: relative;
+    width: 100%;
+    display: flex;
+  }
+
+  #tarot-card {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.1s ease-out, filter 0.4s ease;
+    user-select: none;
+    -webkit-user-drag: none;
+    z-index: 1;
+  }
+
+  #tarot-card:active {
+    transform: scale(0.98);
+  }
+
+  /* Camada de Grain específica da Carta */
+  .card-grain-layer {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: 0; /* Controlado pelo slider de grain da carta */
+    border-radius: 8px;
+    z-index: 2;
+    mix-blend-mode: multiply;
+  }
+  .app-container.light-mode .card-grain-layer {
+    mix-blend-mode: darken;
+  }
+
+  /* Sobreposição do Conselho */
+  #advice-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 40%, rgba(0,0,0,0) 100%);
+    color: #fff;
+    padding: 60px 20px 25px;
+    box-sizing: border-box;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    text-align: center;
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  #card-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  #card-advice {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 300;
+    line-height: 1.6;
+    letter-spacing: 0.5px;
+    color: #eaeaea;
+  }
+
+  /* POP-UP GRAIN (Aumentado em 30%) */
+  #grain-modal {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 1000;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
+
+  .grain-modal-content {
+    background: #1a1a1a;
+    padding: 39px 26px; /* 30% maior */
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 32px; /* 30% maior */
+    position: relative;
+  }
+
+  .close-modal-btn {
+    position: absolute;
+    top: 12px; right: 18px;
+    color: #aaa;
+    font-size: 1.8rem;
+    cursor: pointer;
+    font-family: sans-serif;
+  }
+  .close-modal-btn:hover { color: #fff; }
+
+  .popup-card-box {
+    position: relative;
+    width: 182px; /* 140px + 30% */
+    border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+  }
+  .popup-card-box img {
+    width: 100%;
+    display: block;
+    border-radius: 8px;
+  }
+
+  .slider-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 234px; /* 180px + 30% */
+  }
+
+  /* Slider Vertical */
+  input[type="range"].vertical-slider {
+    -webkit-appearance: slider-vertical;
+    appearance: slider-vertical;
+    width: 10px;
+    height: 100%;
+    outline: none;
+    cursor: pointer;
+  }
+  
+  .slider-label {
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+  }
+
 </style>
 </head>
 <body>
 
-<header>
-  <h1>Viniastros</h1>
-</header>
+<div class="app-container" id="main-container">
+  
+  <div class="texture-overlay" id="global-texture"></div>
 
-<div id="gameScreen">
+  <!-- TELA INICIAL -->
+  <div id="start-screen">
+    <button id="start-btn" class="ui-text ui-border" onclick="startApp()">Iniciar rolagem de arcanos</button>
+    
+    <div class="settings-container">
+      
+      <!-- Seletor de Cores -->
+      <div class="settings-group">
+        <div class="settings-title ui-text">Fundo</div>
+        <div class="color-swatches" id="swatch-container">
+          <div class="swatch" style="background-color: #111111;" onclick="changeTheme('#111111', this, false)"></div>
+          <div class="swatch" style="background-color: #F5F5F5;" onclick="changeTheme('#F5F5F5', this, true)"></div>
+          <div class="swatch" style="background-color: #161616;" onclick="changeTheme('#161616', this, false)"></div>
+          <div class="swatch active" style="background-color: #83A9C7;" onclick="changeTheme('#83A9C7', this, false)"></div>
+          <div class="swatch" style="background-color: #C78383;" onclick="changeTheme('#C78383', this, false)"></div>
+          <div class="swatch" style="background-color: #C7A583;" onclick="changeTheme('#C7A583', this, false)"></div>
+          <div class="swatch" style="background-color: #C7C783;" onclick="changeTheme('#C7C783', this, false)"></div>
+          <div class="swatch" style="background-color: #83C783;" onclick="changeTheme('#83C783', this, false)"></div>
+          <div class="swatch" style="background-color: #A583C7;" onclick="changeTheme('#A583C7', this, false)"></div>
+          <div class="swatch" style="background-color: #C783A5;" onclick="changeTheme('#C783A5', this, false)"></div>
+          <input type="color" id="custom-color-picker" class="swatch wheel-picker" value="#D4AF37" title="Escolher cor personalizada">
+        </div>
+      </div>
 
-  <div class="slot-col" style="width:100%;">
-    <div class="section-label">Energia do Dia</div>
-    <div class="row-pair">
-      <div class="slot-col">
-        <div class="card-slot empty" id="slot-dia-maior" data-slot="dia-maior" onclick="onSlotClick('dia-maior')">Maior</div>
-        <div class="slot-caption">Arcano Maior</div>
+      <!-- Filtros da Carta -->
+      <div class="settings-group">
+        <div class="settings-title ui-text">Filtro de Cor</div>
+        <div class="filter-buttons" id="card-filters">
+          <button class="opt-btn ui-text ui-border active" onclick="setFilter('none', this)">Normal</button>
+          <button class="opt-btn ui-text ui-border" onclick="setFilter('grayscale(100%) contrast(120%)', this)">P&B</button>
+          <button class="opt-btn ui-text ui-border" onclick="setFilter('saturate(180%) contrast(105%)', this)">Saturado</button>
+        </div>
       </div>
-      <div class="slot-col">
-        <div class="card-slot empty" id="slot-dia-menor" data-slot="dia-menor" onclick="onSlotClick('dia-menor')">Menor</div>
-        <div class="slot-caption">Arcano Menor</div>
+
+      <!-- Textura Global -->
+      <div class="settings-group">
+        <div class="settings-title ui-text">Textura Global</div>
+        <div class="filter-buttons" id="texture-filters">
+          <button class="opt-btn ui-text ui-border active" onclick="setTexture('none', this)">Liso</button>
+          <button class="opt-btn ui-text ui-border" onclick="setTexture('grain-1', this)">Grain 1</button>
+        </div>
       </div>
+
+      <!-- Botão Grain da Carta -->
+      <div class="settings-group">
+        <div class="settings-title ui-text">Efeito da Carta</div>
+        <button class="preview-card-trigger ui-text ui-border" onclick="openGrainModal()">Grain da Carta</button>
+      </div>
+
     </div>
   </div>
 
-  <div class="slot-col" style="width:100%;">
-    <div class="section-label">Conselho</div>
-    <div class="row-pair">
-      <div class="slot-col">
-        <div class="card-slot empty" id="slot-conselho-maior" data-slot="conselho-maior" onclick="onSlotClick('conselho-maior')">Maior</div>
-        <div class="slot-caption">Arcano Maior</div>
+  <!-- TELA PRINCIPAL - REELS -->
+  <div id="reels-screen">
+    <div class="title ui-text">Pressione o dedo<br>e escolha sua carta</div>
+
+    <div class="card-wrapper">
+      <div class="author-tag">@vinitarocchi</div>
+      
+      <div class="card-inner">
+        <img id="tarot-card" src="" alt="Arcano do Tarot">
+        <!-- Camada de Grain exclusiva da Carta -->
+        <div id="main-card-grain" class="card-grain-layer"></div>
+        
+        <div id="advice-overlay">
+          <div id="card-name">Carregando...</div>
+          <div id="card-advice">Conectando ao universo...</div>
+        </div>
       </div>
-      <div class="slot-col">
-        <div class="card-slot empty" id="slot-conselho-menor" data-slot="conselho-menor" onclick="onSlotClick('conselho-menor')">Menor</div>
-        <div class="slot-caption">Arcano Menor</div>
-      </div>
+      
     </div>
-  </div>
-
-  <div id="writeBtnWrap">
-    <button class="btn primary" onclick="openPlanner()">Escreva sobre seu dia</button>
-  </div>
-
-  <div id="controls">
-    <button class="btn" id="btnToggleTags" onclick="toggleTags()">Ocultar Significados</button>
-    <button class="btn" onclick="updateTags()">Atualizar Significados</button>
-    <button class="btn" onclick="resetGame()">Limpar Jogo</button>
   </div>
 
 </div>
 
-<div id="drawPanel">
-  <div id="drawStatus">Selecione uma carta</div>
-  <div id="drawGrid"></div>
-</div>
-
-<div id="detailModal" class="modal">
-  <div class="modal-content">
-    <button class="close-x" onclick="closeDetail()">&times;</button>
-    <h2 id="detailName">Arcano</h2>
-    <img id="detailImg" src="" alt="">
-    <div class="verbs" id="detailVerbs"></div>
-    <div class="situ" id="detailSitu"></div>
-  </div>
-</div>
-
-<!-- ================= PLANNER ================= -->
-<div id="plannerOverlay">
-  <div id="plannerPage">
-    <span class="corner tl" onclick="closePlanner()">☾</span>
-    <span class="corner tr">☽</span>
-    <div class="sunburst">✦ ⋆ ☼ ⋆ ✦</div>
-
-    <div class="date-box">
-      <span contenteditable="true" id="dDay">__</span><span class="sep">/</span>
-      <span contenteditable="true" id="dMonth">__</span><span class="sep">/</span>
-      <span contenteditable="true" id="dYear">____</span>
+<!-- POP-UP GRAIN DA CARTA -->
+<div id="grain-modal">
+  <div class="grain-modal-content">
+    <div class="close-modal-btn" onclick="closeGrainModal()">&times;</div>
+    
+    <div class="popup-card-box">
+      <img id="popup-random-card" src="" alt="Carta Aleatória">
+      <div id="popup-card-grain" class="card-grain-layer" style="opacity: 0;"></div>
     </div>
-
-    <div class="days-row" id="daysRow"></div>
-
-    <div class="orn-row"><span class="orn-line"></span><span class="plabel conselho">Energia do Dia</span><span class="orn-line"></span></div>
-    <div class="sticker-row">
-      <div class="sticker" id="stickerDiaMaior"><div class="art" id="pStickerDiaMaior"></div></div>
-      <div class="sticker" id="stickerDiaMenor"><div class="art" id="pStickerDiaMenor"></div></div>
+    
+    <div class="slider-wrapper">
+      <div class="slider-label">Intensidade</div>
+      <input type="range" id="grain-intensity" class="vertical-slider" min="0" max="1" step="0.05" value="0">
+      
+      <!-- Novo botão OK -->
+      <button id="apply-grain-btn" class="opt-btn ui-text ui-border" style="margin-top: 15px;" onclick="applyGrainAndClose()">OK</button>
     </div>
-    <div class="write-lines" contenteditable="true" id="writeDia"></div>
-
-    <div class="orn-row"><span class="orn-line"></span><span class="plabel conselho">Conselho</span><span class="orn-line"></span></div>
-    <div class="sticker-row">
-      <div class="sticker" id="stickerConselhoMaior"><div class="art" id="pStickerConselhoMaior"></div></div>
-      <div class="sticker" id="stickerConselhoMenor"><div class="art" id="pStickerConselhoMenor"></div></div>
-    </div>
-    <div class="write-lines" contenteditable="true" id="writeConselho"></div>
-
-    <span class="corner bl">☾</span>
-    <span class="corner br">☽</span>
   </div>
 </div>
 
 <script>
-/* ============================================================
-   DECK — apenas Radiant Waite
-   ============================================================ */
-const RADIANT_BASE = 'https://marycusack.com/Decks/Images/Tarot/R/Radiant/';
+  const deck = [{"name": "O Louco", "img": "00-scaled.jpg", "advice": "Dê um salto de fé. Abrace o novo e confie no fluxo da vida sem medo do futuro.", "url": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/00-scaled.jpg"}, {"name": "O Mago", "img": "01-scaled.jpg", "advice": "Você possui todos os recursos e habilidades. O poder de realizar está em suas mãos, aja agora.", "url": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/01-scaled.jpg"}, {"name": "A Sacerdotisa", "img": "02-scaled.jpg", "advice": "Ouça sua intuição. As respostas que você busca estão guardadas no silêncio do seu interior.", "url": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/02-scaled.jpg"}, {"name": "A Imperatriz", "img": "03-scaled.jpg", "advice": "Período de abundância e criatividade. Nutra seus projetos e conecte-se com sua essência amorosa.", "url": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/03-scaled.jpg"}, {"name": "O Imperador", "img": "04-scaled.jpg", "advice": "Estruture sua vida. Aja com disciplina, organização e assuma a liderança da sua jornada.", "url": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/04-scaled.jpg"}, {"name": "O Hierofante", "img": "05-scaled.jpg", "advice": "Siga seus valores e tradições. Busque conhecimento profundo ou aconselhe-se com sabedoria.", "url": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/05-scaled.jpg"}, {"name": "Os Enamorados", "img": "06-scaled.jpg", "advice": "Escolha com o coração livre de dúvidas. Momento de alinhar parcerias e harmonizar suas dualidades.", "url": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/06-scaled.jpg"}, {"name": "O Carro", "img": "07-scaled.jpg", "advice": "Mantenha o foco. Com determinação e controle, você superará qualquer obstáculo em seu caminho.", "url": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/07-scaled.jpg"}, {"name": "A Força", "img": "08-scaled.jpg", "advice": "Domine seus instintos com amor e compaixão. Você tem uma força interior inabalável.", "url": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/08-scaled.jpg"}, {"name": "O Eremita", "img": "09-scaled.jpg", "advice": "Tire um tempo para si. A introspecção e a reflexão iluminarão o caminho a seguir.", "url": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/09-scaled.jpg"}, {"name": "A Roda da Fortuna", "img": "10-scaled.jpg", "advice": "Aceite as mudanças. O universo está girando a seu favor, adapte-se aos novos ciclos da vida.", "url": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/10-scaled.jpg"}, {"name": "A Justiça", "img": "11-scaled.jpg", "advice": "Busque o equilíbrio e aja com integridade. Suas atitudes colherão exatamente o que foi plantado.", "url": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/11-scaled.jpg"}, {"name": "O Enforcado", "img": "12-scaled.jpg", "advice": "Mude sua perspectiva. Aceite as pausas; abrir mão do controle trará uma iluminação profunda.", "url": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/12-scaled.jpg"}, {"name": "A Morte", "img": "13-scaled.jpg", "advice": "Deixe o velho ir para que o novo possa nascer. Aceite essa transformação necessária e libertadora.", "url": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/13-scaled.jpg"}, {"name": "A Temperança", "img": "14-scaled.jpg", "advice": "Busque o caminho do meio. A paciência e a alquimia interior trarão cura e harmonia.", "url": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/14-scaled.jpg"}, {"name": "O Diabo", "img": "15-scaled.jpg", "advice": "Liberte-se das amarras, vícios ou pensamentos limitantes. Retome o controle de si mesmo.", "url": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/15-scaled.jpg"}, {"name": "A Torre", "img": "16-scaled.jpg", "advice": "Estruturas ilusórias estão ruindo. Permita a limpeza para reconstruir algo verdadeiro e sólido.", "url": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/16-scaled.jpg"}, {"name": "A Estrela", "img": "17-scaled.jpg", "advice": "Tenha esperança. Uma fase de grande cura, renovação espiritual e inspiração divina se aproxima.", "url": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/17-scaled.jpg"}, {"name": "A Lua", "img": "18-scaled.jpg", "advice": "Cuidado com medos e ilusões. Enfrente suas shadows interiores e confie cegamente nos seus instintos.", "url": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/18-scaled.jpg"}, {"name": "O Sol", "img": "19-scaled.jpg", "advice": "Clareza, vitalidade e sucesso estão com você. Brilhe intensamente e celebre suas vitórias.", "url": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/19-scaled.jpg"}, {"name": "O Julgamento", "img": "20-scaled.jpg", "advice": "Chegou a hora do despertar. Perdoe o passado e aceite o chamado para um verdadeiro renascimento.", "url": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/20-scaled.jpg"}, {"name": "O Mundo", "img": "21-scaled.jpg", "advice": "Um grande ciclo foi concluído com absoluto sucesso. Celebre sua totalidade e as recompensas.", "url": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/21-scaled.jpg"}, {"name": "Ás de Paus", "img": "01-4.jpg", "advice": "Nova fagulha de inspiração! Agarre essa energia criativa e dê o primeiro passo no seu projeto.", "url": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/01-4.jpg"}, {"name": "Dois de Paus", "img": "02-4.jpg", "advice": "Planeje seu futuro com ambição. Você tem o mundo em suas mãos, saia da zona de conforto.", "url": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/02-4.jpg"}, {"name": "Três de Paus", "img": "03-4.jpg", "advice": "Seus esforços estão começando a dar frutos. Olhe para o horizonte e expanda seus horizontes.", "url": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/03-4.jpg"}, {"name": "Quatro de Paus", "img": "04-4.jpg", "advice": "Celebre suas vitórias em comunidade. Desfrute da paz, estabilidade e alegria no seu lar.", "url": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/04-4.jpg"}, {"name": "Cinco de Paus", "img": "05-4.jpg", "advice": "Conflitos e competições passageiras. Use esse choque de ideias de forma construtiva.", "url": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/05-4.jpg"}, {"name": "Seis de Paus", "img": "06-4.jpg", "advice": "Reconhecimento merecido e sucesso. Você está no caminho da vitória e será muito aplaudido.", "url": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/06-4.jpg"}, {"name": "Sete de Paus", "img": "07-4.jpg", "advice": "Defenda suas convicções. Mantenha sua posição com firmeza diante das adversidades.", "url": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/07-4.jpg"}, {"name": "Oito de Paus", "img": "08-4.jpg", "advice": "As coisas vão acelerar! Prepare-se para comunicações rápidas e movimento na sua vida.", "url": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/08-4.jpg"}, {"name": "Nove de Paus", "img": "09-4.jpg", "advice": "Resiliência. Você pode estar cansado pelas lutas, mas está quase no fim. Mantenha-se firme.", "url": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/09-4.jpg"}, {"name": "Dez de Paus", "img": "10-4.jpg", "advice": "Cuidado com a sobrecarga. Solte os pesos desnecessários e não tenha medo de delegar.", "url": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/10-4.jpg"}];
 
-const majorNames = [
-  "0 - O Louco","1 - O Mago","2 - A Sacerdotisa","3 - A Imperatriz",
-  "4 - O Imperador","5 - O Hierofante","6 - Os Enamorados","7 - O Carro",
-  "8 - A Força","9 - O Eremita","10 - A Roda da Fortuna","11 - A Justiça",
-  "12 - O Enforcado","13 - A Morte","14 - A Temperança","15 - O Diabo",
-  "16 - A Torre","17 - A Estrela","18 - A Lua","19 - O Sol",
-  "20 - O Julgamento","21 - O Mundo"
-];
-const majorFileNames = [
-  "00%20Fool","01%20Magician","02%20Priestess","03%20Empress",
-  "04%20Emperor","05%20Hierophant","06%20Lovers","07%20Chariot",
-  "08%20Strength","09%20Hermit","10%20Wheel","11%20Justice",
-  "12%20Hanged","13%20Death","14%20Temperance","15%20Devil",
-  "16%20Tower","17%20Star","18%20Moon","19%20Sun",
-  "20%20Judgement","21%20World"
-];
+  let selectedCards = [];
+  let spinInterval;
+  let isSpinning = false;
+  let currentIndex = 0;
+  
+  const appContainer = document.getElementById('main-container');
+  const startScreen = document.getElementById('start-screen');
+  const reelsScreen = document.getElementById('reels-screen');
+  const startBtn = document.getElementById('start-btn');
+  const tarotCard = document.getElementById('tarot-card');
+  const cardName = document.getElementById('card-name');
+  const cardAdvice = document.getElementById('card-advice');
+  const customColorPicker = document.getElementById('custom-color-picker');
 
-function generateMinors(prefix, suitLabel){
-  let cards = [];
-  for (let i = 1; i <= 10; i++) {
-    let numStr = String(i).padStart(2,'0');
-    cards.push({ name: i===1 ? `Ás de ${suitLabel}` : `${i} de ${suitLabel}`, url: `${RADIANT_BASE}${prefix}${numStr}.jpg` });
-  }
-  const courtNames = ['Pajem','Cavaleiro','Rainha','Rei'];
-  const courtSuffixes = ['C1P','C2K','C3Q','C4K'];
-  courtNames.forEach((n,i)=> cards.push({ name:`${n} de ${suitLabel}`, url:`${RADIANT_BASE}${prefix}${courtSuffixes[i]}.jpg` }));
-  return cards;
-}
+  // Elementos do Modal Grain
+  const grainModal = document.getElementById('grain-modal');
+  const popupRandomCard = document.getElementById('popup-random-card');
+  const grainIntensitySlider = document.getElementById('grain-intensity');
+  const mainCardGrain = document.getElementById('main-card-grain');
+  const popupCardGrain = document.getElementById('popup-card-grain');
 
-const deck = {
-  major: majorNames.map((name,i)=>({ name, url:`${RADIANT_BASE}${majorFileNames[i]}.jpg` })),
-  pentacles: generateMinors('P','Ouros'),
-  swords: generateMinors('S','Espadas'),
-  cups: generateMinors('C','Copas'),
-  wands: generateMinors('W','Paus')
-};
-function allMinors(){ return [...deck.pentacles, ...deck.swords, ...deck.cups, ...deck.wands]; }
-
-/* ============================================================
-   PALAVRAS-CHAVE (fluxo de significados)
-   ============================================================ */
-const verbsMap = {
-"O Mago": [ "dar um jeito", "com criatividade", "novidades e inícios", "moderno", "lábia e carisma", "sabe vender", "novos projetos", "potencialidades inexploradas", "iniciativas promissoras", "soluções práticas", "recursos disponíveis", "caminhos abertos", "início", "criação", "habilidade", "comunicação", "ação", "vontade", "networking" ],
-"A Sacerdotisa": [ "perfeccionismo", "passividade", "inércia", "inteligencia e memória", "quer receber", "não fala", "se esconde", "segredos revelados", "sabedoria oculta", "intuição aguçada", "preparação mental", "gestação de ideias", "estudar para um concurso", "trabalho rotineiro" ],
-"A Imperatriz": [ "negociar", "semear e plantar", "traquejo", "generosamente", "comunicativamente", "harmoniosamente", "novos projetos", "desenvolvimento pessoal", "expressão artística", "fertilidade criativa", "abundância material", "autoafirmação social" ],
-"O Imperador": [ "possessivo", "estável", "precisa segurança", "controle", "conservador", "concretamente", "bases sólidas", "estrutura definida", "controle total", "autoridade estabelecida", "realização prática", "segurança garantida" ],
-"O Hierofante": [ "tradicional", "protocolar", "regras", "moralmente", "eticamente", "coletivamente", "ensinamentos superiores", "valores éticos", "guia espiritual", "conhecimento tradicional", "alinhamento social", "busca de sentido" ],
-"Os Enamorados": [ "afetivo", "negociar", "decisões", "harmoniosamente", "decisivamente", "sensivelmente", "opções importantes", "alianças afetivas", "decisões cruciais", "harmonia interna", "melhoria profissional" ],
-"O Carro": [ "impulso", "avanço", "energia", "direto ao ponto", "faz antes de pensar", "ambiciosamente", "êxito conquistado", "objetivos claros", "direção tomada", "boa liderança", "promoção" ],
-"A Justiça": [ "equilibradamente", "justamente", "imparcialmente", "racionalmente", "honestamente", "claramente", "decisões justas", "equilíbrio interno", "acordos formais", "verdade revelada", "consequências lógicas", "ordem estabelecida" ],
-"O Eremita": [ "trabalho lento", "trabalho de formiguinha", "trabalho discreto", "dificuldade de ter trabalho", "estabilidade profissional", "autoconhecimento profundo", "sabedoria adquirida", "prudência necessária", "reflexão solitária", "análise minuciosa" ],
-"A Roda da Fortuna": [ "imprevisivibilidade", "instável", "inconstante", "mudanças no trabalho", "flexivelmente", "mudanças rápidas", "oportunidades surgindo", "ciclos naturais", "movimento de vida", "novas fases" ],
-"A Força": [ "corajosamente", "controladamente", "dominantemente", "vibrantemente", "ternamente", "firmemente", "domínio dos instintos", "energia vital", "coragem pessoal", "força interior", "auto-controle emocional" ],
-"O Enforcado": [ "estragado", "sem recursos", "resistente", "estagnado", "carente", "podre", "visão alterada", "vitimista", "prejuízo", "desqualificado", "inadaptação", "ilusão", "suspensão", "dor e sofrimento" ],
-"A Morte": [ "transformação", "mudança", "acelerado", "egoísta", "desapega", "inova", "muda o rumo", "prática", "ação", "corajosa", "rompimento de valores e ilusões", "futuro promissor" ],
-"A Temperança": [ "lentidão", "arrastado", "superficial e cômodo", "otimista", "procrastina e enrola", "apaziguar e harmonizar", "tolerância e permissividade", "tédio ou serenidade", "disciplina" ],
-"O Diabo": [ "desejo", "apego", "insatisfeito", "inteligência", "egoísta e possessivo", "racional", "poder material", "ambição", "obsessão", "teimosia", "não aceita não", "manipulador" ],
-"A Torre": [ "ataque externo", "estrago", "cenário terrível", "sofrimento", "ruína", "sem estrutura", "ruptura de valores e ideias", "brutalidade", "agressividade", "atrasos", "dívida" ],
-"A Estrela": [ "expectativa", "sorte", "crescimento", "sucesso", "coragem", "confiança", "ingenuidade", "pureza", "renovação", "felicidade", "criatividade", "abundância" ],
-"A Lua": [ "loucura", "reatividade", "magia", "não escuta", "medos ilusórios", "hiperdimensiona", "fartura", "confunde real e imaginário", "paranoia", "criativo", "sorte e promoção" ],
-"O Sol": [ "alegremente", "radiantemente", "claramente", "vitoriosamente", "genuinamente", "calorosamente", "sucesso total", "clareza absoluta", "alegria de viver", "reconhecimento público", "vitalidade plena" ],
-"O Julgamento": [ "decisivamente", "renovadamente", "conscientemente", "reveladoramente", "inevitavelmente", "espiritualmente", "chamado interior", "tomada de consciência", "renascimento espiritual", "redenção pessoal" ],
-"O Mundo": [ "crescimento", "finalização", "mudança de fase", "expansão", "egoísta", "coragem", "sucesso total", "conclusão perfeita", "autoconfiança", "sorte e sucesso", "ampliação" ],
-"O Louco": [ "desleixo", "perde tudo", "euforia", "cai em golpes", "esquece o dinheiro", "distraído", "ideias desconexas", "prejuízos", "irresponsabilidade", "coragem", "não confiável", "alegria" ],
-"Ás de Ouros": [ "potenciar", "começar", "efetivar", "acontecer", "realizar", "materializar", "brilhar", "amparar", "ampliar", "sorte e realização", "reconhecimento e prestígio", "infinitas possibilidades" ],
-"2 de Ouros": [ "adiar", "conter", "superar", "administrar", "procrastinar", "coordenar", "mudar", "adaptar", "adversidade e flexibilidade", "impasse", "malabarismos materiais" ],
-"3 de Ouros": [ "expandir", "avançar", "ajudar", "ensinar", "orientar", "cooperar", "contribuir", "planejar", "ajuda de terceiros", "trabalho em equipe", "crescimento e abundância" ],
-"4 de Ouros": [ "acumular", "controlar", "dominar", "reter", "petrificar", "recuar", "estagnar", "mesquinharia e egoísmo", "medo de perder", "avareza e teimosia", "ciúmes e inveja" ],
-"5 de Ouros": [ "arruinar", "afastar", "estragar", "mofar", "perder", "rejeitar", "esgotar", "negligenciar", "sofrer", "pobreza e perdas", "carência de recursos" ],
-"6 de Ouros": [ "carência", "ausência de", "prolongar", "adiar", "relutar", "aceitar", "solucionar", "oferecer", "resgatar", "ajuda por generosidade", "pedir ajuda" ],
-"7 de Ouros": [ "colher", "progredir", "avançar", "receber", "avaliar", "florescer", "dominar", "analisar", "estruturar", "lucros e progresso", "prosperidade longo prazo" ],
-"8 de Ouros": [ "recomeçar", "renascer", "colher", "aprender", "refinar", "aprimorar", "planejar", "descobrir", "investir", "habilidade de perito", "sucesso e sorte" ],
-"9 de Ouros": [ "fertilizar", "recompensar", "descansar", "colher", "pescar", "concretizar", "materializar", "multiplicar", "sorte e satisfação", "sucesso longo prazo" ],
-"10 de Ouros": [ "realizar", "concretizar", "perpetuar", "receber", "adotar", "administrar", "valorizar", "estabilizar", "sucesso a longo prazo", "bens materiais e heranças" ],
-"Ás de Espadas": [ "fixar", "realizar", "racionalizar", "impulsionar", "decidir", "conquistar", "expandir", "focar", "agir", "força e potência", "coragem e furor", "clareza mental e lógica" ],
-"2 de Espadas": [ "teimar", "opor", "conflitar", "disputar", "empatar", "discordar", "recusar", "romper", "cabo de guerra", "rivalidade e arrogância", "dualidade e discórdia" ],
-"3 de Espadas": [ "não da certo", "ruptura", "não vinga", "comprometido", "traição", "errou", "conflitar", "romper", "incompatibilidade e melancolia" ],
-"4 de Espadas": [ "paralisar", "suspender", "esgotar", "descansar", "refugiar", "recolher", "reequipar", "pausa para curar feridas", "reclusão e solidão" ],
-"5 de Espadas": [ "humilhar", "teimar", "vingar", "revidar", "degradar", "implorar", "discutir", "vitimizar", "agredir", "mico e derrota moral" ],
-"6 de Espadas": [ "abandonar", "fugir", "afastar", "distanciar", "retirar", "mudar", "partir", "renunciar", "viajar", "fuga e águas calmas" ],
-"7 de Espadas": [ "diplomar", "fugir", "roubar", "debochar", "stalkear", "esquivar", "trapacear", "dissimular", "mentir", "fuga astuta e coragem" ],
-"8 de Espadas": [ "destruir", "expor", "trair", "errar", "roubar", "desmascarar", "reprovar", "adoecer", "estagnar", "vexame público humilhante" ],
-"9 de Espadas": [ "desesperar", "perder", "afligir", "angustiar", "isolar", "abandonar", "oprimir", "degradar", "chorar", "aflição e angústia" ],
-"10 de Espadas": [ "finalizar", "romper", "eliminar", "sofrer", "decidir", "radicalizar", "exaurir", "desistir", "agredir", "ruptura intencional dolorosa" ],
-"Ás de Copas": [ "potenciar", "começar", "efetivar", "realizar", "materializar", "ostentar", "transbordar", "nutrir", "harmonizar", "sorte e abundância", "euforia e alegria", "amor e paixão" ],
-"2 de Copas": [ "realizar", "agir", "negociar", "propor", "atrair", "associar", "cooperar", "comprometer", "apaziguar", "comunicação fluida e reciprocidade" ],
-"3 de Copas": [ "formalização", "acordos", "negociações", "evolução por conquista", "cura", "solução", "despreocupação", "sorte e abundância", "fim de conflitos", "liberdade" ],
-"4 de Copas": [ "adiar e rejeitar", "ranço", "fofocar", "invejar", "aborrecer", "desinteressar", "recuar", "irritado", "tédio e apatia", "insatisfação irreal" ],
-"5 de Copas": [ "vitimizar", "fracassar", "quebrar", "arrepender", "agonizar", "decepcionar", "lamentar", "culpar", "reclusar", "amargura e melancolia" ],
-"6 de Copas": [ "saudar", "melancolizar", "fugir", "tradicional", "lamentar", "conservar", "paralisar", "vitimista", "solidarizar", "nostalgia e saudade" ],
-"7 de Copas": [ "deslumbrar", "trair", "prometer", "mentir", "enganar", "fantasiar", "anestesiar", "alucinar", "orgulho e soberba", "fuga da realidade" ],
-"8 de Copas": [ "abandonar", "expulsar", "desleixar", "fracassar", "ir", "despedir", "chorar", "arrepender", "adoecer", "saída forçada" ],
-"9 de Copas": [ "superar", "alegrar", "promover", "avançar", "progredir", "socializar", "harmonizar", "beber", "conciliar", "felicidade e sorte" ],
-"10 de Copas": [ "aumentar", "sentir", "ampliar", "confundir", "iludir", "fantasiar", "vincular", "saciar", "comemorar", "vínculos afetivos sinceros" ],
-"Ás de Paus": [ "concentrar", "potenciar", "engajar", "comprometer", "inspirar", "alegrar", "apaixonar", "criar", "explodir", "sorte e meritocracia" ],
-"2 de Paus": [ "empacar", "paralisar", "adiar", "reavaliar", "desinteressar", "surpreender", "neutralizar", "empatar", "observar", "impasse sem ação" ],
-"3 de Paus": [ "visionar", "explorar", "projetar", "avançar", "negociar", "progredir", "expandir", "viajar", "superar", "conquista de novo território" ],
-"4 de Paus": [ "celebrar", "comemorar", "confraternizar", "viajar", "compartilhar", "harmonizar", "conciliar", "excitar", "descansar", "férias viagem sorte" ],
-"5 de Paus": [ "aborrecer", "desgastar", "lutar", "discutir", "competir", "cansar", "exigir", "trabalhar", "detalhar", "chatice e picuinhas" ],
-"6 de Paus": [ "vangloriar", "honrar", "reconhecer", "concretizar", "evoluir", "contentar", "exibir", "progredir", "liderar", "glórias do trivial" ],
-"7 de Paus": [ "esforçar", "focar", "perseverar", "conquistar", "lutar", "defender", "boicotar", "sabotar", "desafiar", "vitória irreversível firme" ],
-"8 de Paus": [ "finalizar", "agilizar", "acelerar", "expandir", "curar", "surpreender", "transformar", "adaptar", "comunicar", "comunicação frenética agitada" ],
-"9 de Paus": [ "errar", "temer", "atrasar", "exaurir", "reviver", "retrair", "recolher", "defender", "duvidar", "medo de errar novamente" ],
-"10 de Paus": [ "lutar", "sufocar", "oprimir", "sobrecarregar", "superar", "aceitar", "renovar", "reorganizar", "mudar", "esforço grande com sucesso" ],
-"Pajem de Ouros": [ "investir", "começar", "iniciar", "focar", "observar", "analisar", "conservar", "trabalhar", "investigar", "notícias sempre boas" ],
-"Cavaleiro de Ouros": [ "disciplinar", "focar", "executar", "concretizar", "perseverar", "projetar", "trabalhar", "investir", "organizar", "estabilidade e dignidade" ],
-"Rainha de Ouros": [ "realizar", "dominar", "fertilizar", "manter", "conservar", "nutrir", "colher", "acolher", "preservar", "certeza absoluta de sucesso" ],
-"Rei de Ouros": [ "superar", "prover", "alimentar", "proteger", "cuidar", "negociar", "liderar", "dominar", "conciliar", "materialidade e estabilidade" ],
-"Pajem de Espadas": [ "mentir e sacanear", "duvidar", "evadir", "ofender", "fofocar", "stalkear", "provocar", "brigar", "criticar", "grama alheia sempre verde" ],
-"Cavaleiro de Espadas": [ "realizar", "agilizar", "lutar", "vencer", "focar", "ousar", "comandar", "liderar", "atropelar", "rapidez inteligência foco" ],
-"Rainha de Espadas": [ "vingar", "desmascarar", "desvendar", "dissimular", "chantagear", "estrategizar", "calcular", "controlar", "criticar", "intelligent austera franca" ],
-"Rei de Espadas": [ "controlar", "focar", "batalhar", "reconstruir", "proteger", "comandar", "liderar", "calcular", "dominar", "força mental inabalável" ],
-"Pajem de Copas": [ "conciliar", "perdoar", "propor", "confiar", "romantizar", "seduzir", "empatizar", "acolher", "proteger", "honestidade digna sem malícias" ],
-"Cavaleiro de Copas": [ "paquerar", "romantizar", "seduzir", "encantar", "prometer", "futilizar", "idealizar", "ostentar", "carismático iludido paquerador" ],
-"Rainha de Copas": [ "prestativa", "romantizar", "esconder", "fantasiar", "sufocar", "acolher", "curar", "proteger", "intuir", "fofa politicamente correta" ],
-"Rei de Copas": [ "agradar", "bajular", "seduzir", "romantizar", "diplomatizar", "negociar", "articular", "priorizar", "mimar", "gentil e queridão" ],
-"Pajem de Paus": [ "propor", "prometer", "impulsionar", "agir", "reativar", "entusiasmar", "trabalhar", "ousar", "reagir", "boas intenções lealdade" ],
-"Cavaleiro de Paus": [ "realizar", "empolgar", "agitar", "viajar", "dinamizar", "otimizar", "apaixonar", "impulsionar", "seduzir", "realizador otimista vigoroso" ],
-"Rainha de Paus": [ "liderar", "empreender", "focar", "determinar", "seduzir", "magnetizar", "domesticar", "aconselhar", "brilhar", "altiva generosa íntegra" ],
-"Rei de Paus": [ "liderar", "guiar", "curar", "avançar", "empreender", "determinar", "motivar", "delegar", "articular", "honra espiritualidade reverência" ],
-};
-
-const situacaoMap = {
-  "O Louco": "Início de uma jornada imprevista. Pede um salto de fé, rompendo com o conformismo para abraçar o desconhecido com liberdade.",
-  "O Mago": "Chegada de ferramentas e oportunidades. Exige iniciativa, foco e lábia para materializar ideias.",
-  "A Sacerdotisa": "Cenário de espera, reflexão e observação. Pede intuição aguçada e discrição.",
-  "A Imperatriz": "Ápice da criatividade e do desenvolvimento. Projetos ganham corpo de forma abundante e bela.",
-  "O Imperador": "Consolidação das bases. Requer rigor, estrutura e comando prático.",
-  "O Hierofante": "Encontro com normas e sistemas de crença. Conselho formal ou protocolos institucionais.",
-  "Os Enamorados": "Encruzilhada afetiva ou intelectual. Demanda escolher um caminho com harmonia.",
-  "O Carro": "Superação através do foco. Avanço rápido e impetuoso rumo à vitória.",
-  "A Força": "Apaziguamento dos instintos. Coragem silenciosa e persistência para domar adversidades.",
-  "O Eremita": "Tempo de reclusão. Pede distanciamento do barulho externo e maturação vagarosa.",
-  "A Roda da Fortuna": "Reviravoltas iminentes. Situação transitória e cíclica que foge do controle.",
-  "A Justiça": "Peso dos atos e reajuste. Avaliação rigorosa e imparcial.",
-  "O Enforcado": "Bloqueio temporário necessário. Qualquer esforço será inútil; pede mudança de perspectiva.",
-  "A Morte": "Encerramento absoluto. Corte profundo que limpa o terreno para uma real transformação.",
-  "A Temperança": "Ritmo fluido da cura. Demanda extrema paciência e harmonização aos poucos.",
-  "O Diabo": "Magnetismo dos desejos materiais. Ambição e apego ditam as regras.",
-  "A Torre": "Queda das ilusões. Abalo nas estruturas que trazem rupturas bruscas, mas libertadoras.",
-  "A Estrela": "Resgate da fé. Após as tempestades, renovação e esperança retornam.",
-  "A Lua": "Incursão pelas sombras. Situação nebulosa, recheada de inconstâncias e fantasias.",
-  "O Sol": "Plenitude e vitória. Excelente vitalidade e clareza absoluta.",
-  "O Julgamento": "Trombeta do despertar. O passado vem à tona para ser avaliado e transcendido.",
-  "O Mundo": "Autonomia máxima. Conclusão gloriosa de um projeto ou ciclo."
-};
-
-/* ============================================================
-   ESTADO DO JOGO
-   ============================================================ */
-let slots = {
-  'dia-maior': null, 'dia-menor': null,
-  'conselho-maior': null, 'conselho-menor': null
-};
-const sequence = [
-  { slot:'dia-maior', pool:'major', label:'Energia do Dia — Escolha o Arcano Maior' },
-  { slot:'dia-menor', pool:'minor', label:'Energia do Dia — Escolha o Arcano Menor' },
-  { slot:'conselho-maior', pool:'major', label:'Conselho — Escolha o Arcano Maior' },
-  { slot:'conselho-menor', pool:'minor', label:'Conselho — Escolha o Arcano Menor' }
-];
-let seqIndex = 0;
-let tagsVisible = true;
-
-const drawPanel = document.getElementById('drawPanel');
-const drawGrid = document.getElementById('drawGrid');
-const drawStatus = document.getElementById('drawStatus');
-
-function onSlotClick(slotKey){
-  const el = document.getElementById('slot-'+slotKey);
-  if (slots[slotKey]) {
-    openDetail(slots[slotKey]);
-    return;
-  }
-  // só permite iniciar sorteio se for a próxima etapa esperada
-  const idx = sequence.findIndex(s=>s.slot===slotKey);
-  if (idx !== seqIndex) return;
-  runStep();
-}
-
-function runStep(){
-  if (seqIndex >= sequence.length) { finishGame(); return; }
-  const step = sequence[seqIndex];
-  drawPanel.style.display = 'flex';
-  drawStatus.textContent = 'EMBARALHANDO...';
-  drawGrid.innerHTML = '<div class="shuffle-wrap"></div>';
-  const wrap = drawGrid.querySelector('.shuffle-wrap');
-  for (let i=0;i<10;i++){
-    const c = document.createElement('div');
-    c.className='shuffle-card';
-    c.style.animationDelay = (i*0.09)+'s';
-    wrap.appendChild(c);
-  }
-  setTimeout(()=>renderDrawGrid(step), 1100);
-}
-
-function renderDrawGrid(step){
-  drawStatus.textContent = step.label;
-  drawGrid.innerHTML = '';
-  const pool = shuffle(step.pool==='major' ? [...deck.major] : [...allMinors()]);
-
-  const makeBack = (cardData)=>{
-    const back = document.createElement('div');
-    back.className = 'back-card' + (step.pool==='minor' ? ' minor' : '');
-    back.onclick = ()=>{
-      if (back.classList.contains('revealed')) return;
-      back.classList.add('revealed');
-      fillSlot(step.slot, cardData);
-    };
-    return back;
-  };
-
-  if (step.pool === 'minor') {
-    // 4 fileiras de 12 cartas + última fileira centralizada com 8 cartas (total 56)
-    drawGrid.classList.add('rows-layout');
-    const rowSizes = [12,12,12,12,8];
-    let cursor = 0;
-    rowSizes.forEach(size=>{
-      const row = document.createElement('div');
-      row.className = 'draw-row';
-      for (let i=0; i<size && cursor<pool.length; i++, cursor++){
-        row.appendChild(makeBack(pool[cursor]));
-      }
-      drawGrid.appendChild(row);
-    });
-  } else {
-    drawGrid.classList.remove('rows-layout');
-    pool.forEach(cardData=> drawGrid.appendChild(makeBack(cardData)));
-  }
-}
-
-function fillSlot(slotKey, cardData){
-  slots[slotKey] = cardData;
-  const el = document.getElementById('slot-'+slotKey);
-  el.classList.remove('empty');
-  el.classList.add('filled');
-  el.style.backgroundImage = `url(${cardData.url})`;
-  el.textContent = '';
-  el.onclick = ()=>openDetail(cardData);
-  injectTag(el, cardData.name);
-  seqIndex++;
-  setTimeout(()=>{
-    if (seqIndex < sequence.length) {
-      runStep();
+  function changeTheme(colorHex, element, isLightMode) {
+    appContainer.style.backgroundColor = colorHex;
+    
+    if(isLightMode) {
+      appContainer.classList.add('light-mode');
     } else {
-      drawPanel.style.display = 'none';
-      finishGame();
+      appContainer.classList.remove('light-mode');
     }
-  }, 550);
-}
-
-function injectTag(el, cardName, forceNext=false){
-  let cleanName = cardName.replace(/^\d+\s*[-–]\s*/,'').trim();
-  let pool = verbsMap[cleanName] || ['Fluxo'];
-  let usedAttr = el.getAttribute('data-used');
-  let used = usedAttr ? JSON.parse(usedAttr) : [];
-  let idx;
-  if (forceNext && pool.length>1){
-    let avail = pool.map((_,i)=>i).filter(i=>!used.includes(i));
-    if (avail.length===0){ used=[]; avail = pool.map((_,i)=>i); }
-    idx = avail[Math.floor(Math.random()*avail.length)];
-  } else {
-    idx = Math.floor(Math.random()*pool.length);
-    used = [];
+    
+    const swatches = document.querySelectorAll('.swatch');
+    swatches.forEach(swatch => swatch.classList.remove('active'));
+    element.classList.add('active');
   }
-  used.push(idx);
-  el.setAttribute('data-used', JSON.stringify(used));
-  el.setAttribute('data-idx', idx);
-  const old = el.querySelector('.tag');
-  if (old) old.remove();
-  const tag = document.createElement('div');
-  tag.className='tag';
-  tag.textContent = pool[idx];
-  el.appendChild(tag);
-}
 
-function shuffle(arr){
-  let a=[...arr], c=a.length, r;
-  while(c!==0){ r=Math.floor(Math.random()*c); c--; [a[c],a[r]]=[a[r],a[c]]; }
-  return a;
-}
+  customColorPicker.addEventListener('input', function(e) {
+    const hex = e.target.value;
+    
+    const rgb = parseInt(hex.slice(1), 16);
+    const r = (rgb >> 16) & 0xff;
+    const g = (rgb >>  8) & 0xff;
+    const b = (rgb >>  0) & 0xff;
+    
+    const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    const isLight = luma > 128;
 
-function finishGame(){
-  document.getElementById('writeBtnWrap').style.display = 'flex';
-  document.getElementById('controls').style.display = 'flex';
-}
-
-function resetGame(){
-  slots = { 'dia-maior':null,'dia-menor':null,'conselho-maior':null,'conselho-menor':null };
-  seqIndex = 0;
-  ['dia-maior','dia-menor','conselho-maior','conselho-menor'].forEach(k=>{
-    const el = document.getElementById('slot-'+k);
-    el.className = 'card-slot empty';
-    el.style.backgroundImage='';
-    el.textContent = k.includes('maior') ? 'Maior' : 'Menor';
-    el.removeAttribute('data-used');
-    el.removeAttribute('data-idx');
-    el.onclick = ()=>onSlotClick(k);
+    changeTheme(hex, customColorPicker, isLight);
   });
-  document.getElementById('writeBtnWrap').style.display='none';
-  document.getElementById('controls').style.display='none';
-  drawPanel.style.display='none';
-  runStep();
-}
 
-function toggleTags(){
-  tagsVisible = !tagsVisible;
-  document.body.classList.toggle('hide-tags', !tagsVisible);
-  document.getElementById('btnToggleTags').textContent = tagsVisible ? 'Ocultar Significados' : 'Ligar Significados';
-}
+  function setFilter(filterValue, element) {
+    tarotCard.style.filter = filterValue;
+    
+    const btns = document.querySelectorAll('#card-filters .opt-btn');
+    btns.forEach(btn => btn.classList.remove('active'));
+    element.classList.add('active');
+  }
 
-function updateTags(){
-  Object.keys(slots).forEach(k=>{
-    if (slots[k]){
-      const el = document.getElementById('slot-'+k);
-      injectTag(el, slots[k].name, true);
+  function setTexture(textureType, element) {
+    appContainer.classList.remove('texture-grain-1');
+    
+    if (textureType !== 'none') {
+      appContainer.classList.add(`texture-${textureType}`);
     }
-  });
-}
 
-/* ---- modal de detalhe ---- */
-function openDetail(cardData){
-  const clean = cardData.name.replace(/^\d+\s*[-–]\s*/,'').trim();
-  document.getElementById('detailName').textContent = cardData.name;
-  document.getElementById('detailImg').src = cardData.url;
-  const pool = verbsMap[clean] || ['Fluxo'];
-  document.getElementById('detailVerbs').textContent = pool.join(', ');
-  document.getElementById('detailSitu').textContent = situacaoMap[clean] || '';
-  document.getElementById('detailModal').style.display='flex';
-}
-function closeDetail(){ document.getElementById('detailModal').style.display='none'; }
-
-/* ============================================================
-   PLANNER
-   ============================================================ */
-const dayLabels = ['S','T','Q','Q','S','S','D'];
-function buildDaysRow(){
-  const row = document.getElementById('daysRow');
-  row.innerHTML='';
-  dayLabels.forEach((l,i)=>{
-    const c = document.createElement('div');
-    c.className='day-circle';
-    c.textContent=l;
-    c.onclick=()=>{
-      document.querySelectorAll('.day-circle').forEach(x=>x.classList.remove('selected'));
-      c.classList.add('selected');
-    };
-    row.appendChild(c);
-  });
-}
-buildDaysRow();
-
-function openPlanner(){
-  document.getElementById('pStickerDiaMaior').style.backgroundImage = `url(${slots['dia-maior'].url})`;
-  document.getElementById('pStickerDiaMenor').style.backgroundImage = `url(${slots['dia-menor'].url})`;
-  document.getElementById('pStickerConselhoMaior').style.backgroundImage = `url(${slots['conselho-maior'].url})`;
-  document.getElementById('pStickerConselhoMenor').style.backgroundImage = `url(${slots['conselho-menor'].url})`;
-
-  document.getElementById('stickerDiaMaior').onclick = ()=>openDetail(slots['dia-maior']);
-  document.getElementById('stickerDiaMenor').onclick = ()=>openDetail(slots['dia-menor']);
-  document.getElementById('stickerConselhoMaior').onclick = ()=>openDetail(slots['conselho-maior']);
-  document.getElementById('stickerConselhoMenor').onclick = ()=>openDetail(slots['conselho-menor']);
-
-  const now = new Date();
-  if (document.getElementById('dDay').textContent === '__') {
-    document.getElementById('dDay').textContent = String(now.getDate()).padStart(2,'0');
-    document.getElementById('dMonth').textContent = String(now.getMonth()+1).padStart(2,'0');
-    document.getElementById('dYear').textContent = String(now.getFullYear());
+    const btns = document.querySelectorAll('#texture-filters .opt-btn');
+    btns.forEach(btn => btn.classList.remove('active'));
+    element.classList.add('active');
   }
-  document.getElementById('plannerOverlay').style.display='flex';
-}
-function closePlanner(){
-  document.getElementById('plannerOverlay').style.display='none';
-}
 
-/* ---- início automático ---- */
-runStep();
+  function startApp() {
+    startBtn.innerText = "Embaralhando...";
+    startBtn.style.pointerEvents = "none";
+    
+    document.querySelector('.settings-container').style.display = 'none';
+    
+    let shuffled = deck.sort(() => 0.5 - Math.random());
+    selectedCards = shuffled.slice(0, 7);
+
+    let loadedCount = 0;
+    selectedCards.forEach(card => {
+      const img = new Image();
+      img.src = card.url;
+      img.onload = () => {
+        loadedCount++;
+        if(loadedCount === 7) initReels();
+      };
+      img.onerror = () => { 
+        loadedCount++;
+        if(loadedCount === 7) initReels();
+      };
+    });
+  }
+
+  function initReels() {
+    startScreen.style.display = 'none';
+    reelsScreen.style.display = 'flex';
+
+    currentIndex = 0;
+    updateCardDisplay();
+    startSpinning();
+  }
+
+  function startSpinning() {
+    isSpinning = true;
+    spinInterval = setInterval(() => {
+      currentIndex = (currentIndex + 1) % 7;
+      updateCardDisplay();
+    }, 50);
+  }
+
+  function updateCardDisplay() {
+    const chosenCard = selectedCards[currentIndex];
+    tarotCard.src = chosenCard.url;
+    cardName.innerText = chosenCard.name;
+    cardAdvice.innerText = chosenCard.advice;
+  }
+
+  function stopScrolling(e) {
+    if(e) e.preventDefault(); 
+    if(!isSpinning) return;
+    isSpinning = false;
+    clearInterval(spinInterval);
+  }
+
+  tarotCard.addEventListener('mousedown', stopScrolling);
+  tarotCard.addEventListener('touchstart', stopScrolling);
+
+  // === LÓGICA DO POP-UP E AJUSTE DE GRAIN DA CARTA ===
+
+  function openGrainModal() {
+    // Sorteia uma carta aleatória para exibir no pop-up de preview
+    const randomCard = deck[Math.floor(Math.random() * deck.length)];
+    popupRandomCard.src = randomCard.url;
+    grainModal.style.display = 'flex';
+  }
+
+  function closeGrainModal() {
+    grainModal.style.display = 'none';
+    // Se o usuário fechar no "X", reseta o slider e a carta de preview para o valor atual real da carta
+    const currentOpacity = mainCardGrain.style.opacity || 0;
+    grainIntensitySlider.value = currentOpacity;
+    popupCardGrain.style.opacity = currentOpacity;
+  }
+
+  // O slider agora muda APENAS a carta de preview do modal
+  grainIntensitySlider.addEventListener('input', (e) => {
+    const intensity = e.target.value;
+    popupCardGrain.style.opacity = intensity;
+  });
+
+  // Nova função para o botão "OK" aplicar o efeito na tela principal e fechar
+  function applyGrainAndClose() {
+    const intensity = grainIntensitySlider.value;
+    // Aplica o valor na camada das cartas da rolagem
+    mainCardGrain.style.opacity = intensity;
+    grainModal.style.display = 'none';
+  }
+
 </script>
+
 </body>
 </html>
